@@ -1,6 +1,8 @@
 package de.schmeller.schmasm;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -9,11 +11,14 @@ import java.util.NoSuchElementException;
 public class Assembler {
     public static int[] assemble(String assembly) {
         LinkedList<Integer> instructions = new LinkedList<>();
+        Map<String, Integer> labels = new HashMap<>();
+        LinkedList<Integer> labelPointers = new LinkedList<>();
 
         String[] opCodes = assembly.split("[\\n \\t]");
 
         for (String opCode : opCodes) {
             if (isInteger(opCode)) instructions.add(Integer.valueOf(opCode));
+            else if (opCode.endsWith(":")) labels.put(opCode.replace(":", ""), instructions.size());
             else {
                 try {
                     instructions.add(Computer.opCodes.entrySet().stream()
@@ -22,9 +27,19 @@ public class Assembler {
                             .get()
                             .getKey());
                 } catch (NoSuchElementException e) {
-                    System.err.println("[ASM] OpCode \"" + opCode + "\" does not exist!");
+                    int previous = instructions.get(instructions.size() - 1);
+                    if (previous >= 130 && previous <= 145) {
+                        labelPointers.add(instructions.size());
+                        instructions.add(-1);
+                    }
+                    else System.err.println("[ASM] OpCode \"" + opCode + "\" does not exist!");
                 }
             }
+        }
+
+        for (Integer index : labelPointers) {
+            Integer instruction = labels.get(opCodes[index]);
+            instructions.set(index, instruction);
         }
 
         int[] re = new int[instructions.size()];

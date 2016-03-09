@@ -15,7 +15,7 @@ public class Computer {
 
     public static void main(String... args) {
         Computer computer = new Computer(128);
-        computer.loadToRam(Assembler.assemble("ILOAD 5 STORE 100 ILOAD 3 ADD 100 NOT STORE 101 HALT"));
+        computer.loadToRam(Assembler.assemble("ILOAD 5 JMP label label: STORE 100 ILOAD 3 ADD 100 NOT STORE 101 HALT"));
         computer.execute();
         System.out.println(computer.ram[101]);
     }

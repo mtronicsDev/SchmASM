@@ -13,13 +13,6 @@ public class Computer {
     private int[] ram;              //Memory
     private boolean stopped = false;//Has the program halted?
 
-    public static void main(String... args) {
-        Computer computer = new Computer(128);
-        computer.loadToRam(Assembler.assemble("ILOAD 5 JMP label label: STORE 100 ILOAD 3 ADD 100 NOT STORE 101 HALT"));
-        computer.execute();
-        System.out.println(computer.ram[101]);
-    }
-
     public Computer(int ramSize) {
         rax = rbx = rcx = rdx = 0;
         ip = ir = 0;
@@ -238,6 +231,50 @@ public class Computer {
     
     private void clearFlags() {
         fz = fn = fv = false;
+    }
+
+    public int getRamSize() {
+        return ram.length;
+    }
+
+    public int getRax() {
+        return rax;
+    }
+
+    public int getRbx() {
+        return rbx;
+    }
+
+    public int getRcx() {
+        return rcx;
+    }
+
+    public int getRdx() {
+        return rdx;
+    }
+
+    public int getIp() {
+        return ip;
+    }
+
+    public int getIr() {
+        return ir;
+    }
+
+    public boolean isFz() {
+        return fz;
+    }
+
+    public boolean isFn() {
+        return fn;
+    }
+
+    public boolean isFv() {
+        return fv;
+    }
+
+    public int[] getRam() {
+        return ram;
     }
 
     public static final Map<Integer, String> opCodes = new HashMap<>(36);

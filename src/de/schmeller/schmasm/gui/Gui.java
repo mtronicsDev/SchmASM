@@ -17,7 +17,6 @@ import java.util.Vector;
 public class Gui {
     private JPanel contentPane;
     private JTable memory;
-    private JPanel cpuPane;
     private JTextField raxTextField;
     private JTextField rbxTextField;
     private JTextField rcxTextField;
@@ -32,8 +31,6 @@ public class Gui {
     private JTextField instructionRegisterTextField;
     private JTextArea console;
 
-    private JFrame window;
-
     private Computer computer;
     private boolean assembled = false;
 
@@ -41,8 +38,8 @@ public class Gui {
         new Gui();
     }
 
-    public Gui() {
-        window = new JFrame("SchmASM");
+    private Gui() {
+        JFrame window = new JFrame("SchmASM");
         window.setContentPane(contentPane);
         window.setSize(1280, 720);
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

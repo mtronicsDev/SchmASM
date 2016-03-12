@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by schueler on 08.03.2016.
+ * @author Maximilian Schmeller (mtronics_dev)
  */
 public class Computer {
     private int rax, rbx, rcx, rdx; //32-bit registers
@@ -20,6 +20,7 @@ public class Computer {
         ram = new int[ramSize];
     }
 
+    @SuppressWarnings("unused")
     public void clearRam() {
         ram = new int[ram.length];
     }
@@ -28,6 +29,7 @@ public class Computer {
         System.arraycopy(instructions, 0, ram, 0, Math.min(instructions.length, ram.length));
     }
 
+    @SuppressWarnings("unused")
     public void loadToRam(int index, int value) {
         if (index < ram.length) ram[index] = value;
         else throw new IllegalArgumentException("Index " + index + " is too big for the " + ram.length + " integers long RAM!");
@@ -291,8 +293,9 @@ public class Computer {
         return ram;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static final Map<Integer, String> opCodes = new HashMap<>(36);
-
+    @SuppressWarnings("WeakerAccess")
     public static final Map<Integer, Interrupt> interrupts = new HashMap<>(1);
     
     static {

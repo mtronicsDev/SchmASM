@@ -14,6 +14,7 @@ public class Assembler {
         Map<String, Integer> labelLocations = new HashMap<>();
         Map<Integer, String> labelPointers = new HashMap<>();
 
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < instructions.length; i++) {
             String inst = instructions[i];
 

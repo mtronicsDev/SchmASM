@@ -6,6 +6,9 @@ import de.schmeller.schmasm.Computer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Vector;
 
 /**
@@ -27,6 +30,7 @@ public class Gui {
     private JButton executeButton;
     private JTextField instructionPointerTextField;
     private JTextField instructionRegisterTextField;
+    private JTextArea console;
 
     private JFrame window;
 
@@ -48,8 +52,7 @@ public class Gui {
             if (!assembled) {
                 computer.loadToRam(Assembler.assemble(assemblyView.getText()));
                 assembled = true;
-            }
-            else computer.step();
+            } else computer.step();
             updateRegisters();
         });
 
@@ -57,11 +60,19 @@ public class Gui {
             if (!assembled) {
                 computer.loadToRam(Assembler.assemble(assemblyView.getText()));
                 assembled = true;
-            }
-            else computer.execute();
+            } else computer.execute();
             updateRegisters();
         });
 
+        OutputStream outputStream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                console.append(String.valueOf((char) b));
+                console.setCaretPosition(console.getDocument().getLength());
+            }
+        };
+
+        System.setOut(new PrintStream(outputStream));
         window.setVisible(true);
     }
 

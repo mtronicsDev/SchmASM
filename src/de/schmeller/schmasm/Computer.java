@@ -28,6 +28,11 @@ public class Computer {
         System.arraycopy(instructions, 0, ram, 0, Math.min(instructions.length, ram.length));
     }
 
+    public void loadToRam(int index, int value) {
+        if (index < ram.length) ram[index] = value;
+        else throw new IllegalArgumentException("Index " + index + " is too big for the " + ram.length + " integers long RAM!");
+    }
+
     public void execute() {
         while (!stopped) {
             step();
@@ -125,26 +130,32 @@ public class Computer {
                 return;
             case 140:
                 if (fz) ip = getAddressContent(ip);
+                else incrementInstructionPointer();
                 clearFlags();
                 return;
             case 141:
                 if (fn) ip = getAddressContent(ip);
+                else incrementInstructionPointer();
                 clearFlags();
                 return;
             case 142:
                 if (!fn && !fz) ip = getAddressContent(ip);
+                else incrementInstructionPointer();
                 clearFlags();
                 return;
             case 143:
                 if (fz || fn) ip = getAddressContent(ip);
+                else incrementInstructionPointer();
                 clearFlags();
                 return;
             case 144:
                 if (!fn) ip = getAddressContent(ip);
+                else incrementInstructionPointer();
                 clearFlags();
                 return;
             case 145:
                 if (!fz) ip = getAddressContent(ip);
+                else incrementInstructionPointer();
                 clearFlags();
                 return;
             case 150:
@@ -162,24 +173,24 @@ public class Computer {
                 //noinspection Duplicates
                 switch (getAddressContent(ip)) {
                     case 1000: content = rax; break;
-                    case 1100: content = rax & 0x00FF; break;
-                    case 1010: content = rax & 0x00F0; break;
-                    case 1001: content = rax & 0x000F; break;
+                    case 1100: content = rax & 0x0000FFFF; break;
+                    case 1010: content = rax & 0x0000FF00 >> 8; break;
+                    case 1001: content = rax & 0x000000FF; break;
 
                     case 2000: content = rbx; break;
-                    case 2100: content = rbx & 0x00FF; break;
-                    case 2010: content = rbx & 0x00F0; break;
-                    case 2001: content = rbx & 0x000F; break;
+                    case 2100: content = rbx & 0x0000FFFF; break;
+                    case 2010: content = rbx & 0x0000FF00 >> 8; break;
+                    case 2001: content = rbx & 0x000000FF; break;
 
                     case 3000: content = rcx; break;
-                    case 3100: content = rcx & 0x00FF; break;
-                    case 3010: content = rcx & 0x00F0; break;
-                    case 3001: content = rcx & 0x000F; break;
+                    case 3100: content = rcx & 0x0000FFFF; break;
+                    case 3010: content = rcx & 0x0000FF00 >> 8; break;
+                    case 3001: content = rcx & 0x000000FF; break;
 
                     case 4000: content = rdx; break;
-                    case 4100: content = rdx & 0x00FF; break;
-                    case 4010: content = rdx & 0x00F0; break;
-                    case 4001: content = rdx & 0x000F; break;
+                    case 4100: content = rdx & 0x0000FFFF; break;
+                    case 4010: content = rdx & 0x0000FF00 >> 8; break;
+                    case 4001: content = rdx & 0x000000FF; break;
                 }
                 
                 incrementInstructionPointer();
@@ -187,28 +198,31 @@ public class Computer {
                 //noinspection Duplicates
                 switch (getAddressContent(ip)) {
                     case 1000: rax = content; break;
-                    case 1100: rax = content & 0x00FF; break;
-                    case 1010: rax = content & 0x00F0; break;
-                    case 1001: rax = content & 0x000F; break;
+                    case 1100: rax = content & 0x0000FFFF; break;
+                    case 1010: rax = content & 0x000000FF << 8; break;
+                    case 1001: rax = content & 0x000000FF; break;
 
                     case 2000: rbx = content; break;
-                    case 2100: rbx = content & 0x00FF; break;
-                    case 2010: rbx = content & 0x00F0; break;
-                    case 2001: rbx = content & 0x000F; break;
+                    case 2100: rbx = content & 0x0000FFFF; break;
+                    case 2010: rbx = content & 0x000000FF << 8; break;
+                    case 2001: rbx = content & 0x000000FF; break;
 
                     case 3000: rcx = content; break;
-                    case 3100: rcx = content & 0x00FF; break;
-                    case 3010: rcx = content & 0x00F0; break;
-                    case 3001: rcx = content & 0x000F; break;
+                    case 3100: rcx = content & 0x0000FFFF; break;
+                    case 3010: rcx = content & 0x000000FF << 8; break;
+                    case 3001: rcx = content & 0x000000FF; break;
 
                     case 4000: rdx = content; break;
-                    case 4100: rdx = content & 0x00FF; break;
-                    case 4010: rdx = content & 0x00F0; break;
-                    case 4001: rdx = content & 0x000F; break;
+                    case 4100: rdx = content & 0x0000FFFF; break;
+                    case 4010: rdx = content & 0x000000FF << 8; break;
+                    case 4001: rdx = content & 0x000000FF; break;
                 }
                 break;
             case 180:
-                System.out.println("Called interrupt INT" + getAddressContent(ip) + ".");
+                Interrupt interrupt = interrupts.get(getAddressContent(ip));
+
+                if (interrupt != null) interrupt.execute(rax, rbx, rcx, rdx);
+                else System.out.println("Called unknown interrupt INT" + getAddressContent(ip) + ".");
                 break;
             default:
                 throw new IllegalArgumentException("Illegal OpCode " + opCode + "!");
@@ -278,6 +292,8 @@ public class Computer {
     }
 
     public static final Map<Integer, String> opCodes = new HashMap<>(36);
+
+    public static final Map<Integer, Interrupt> interrupts = new HashMap<>(1);
     
     static {
         opCodes.put(1, "HALT");
@@ -310,5 +326,17 @@ public class Computer {
         opCodes.put(2000, "RBX");   opCodes.put(2100, "BX");   opCodes.put(2010, "BH");   opCodes.put(2001, "BL");
         opCodes.put(3000, "RCX");   opCodes.put(3100, "CX");   opCodes.put(3010, "CH");   opCodes.put(3001, "CL");
         opCodes.put(4000, "RDX");   opCodes.put(4100, "DX");   opCodes.put(4010, "DH");   opCodes.put(4001, "DL");
+
+        interrupts.put(33, (rax, rbx, rcx, rdx) -> {
+            if((rax & 0x0000FF00) >> 8 == 2) { //Write char to STDOUT
+                char al = (char) (rax & 0x000000FF);
+                System.out.print(al);
+            }
+        });
+    }
+
+    @FunctionalInterface
+    private interface Interrupt {
+        void execute(int rax, int rbx, int rcx, int rdx);
     }
 }
